@@ -1,28 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { shopifyFetch } from '@/lib/shopify/shopify-fetch';
+
+interface CheckoutItem {
+  variantId: string;
+  quantity: number;
+}
+
+interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+  email: string;
+}
+
+interface CheckoutRequestBody {
+  items: CheckoutItem[];
+  shippingAddress: ShippingAddress;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as CheckoutRequestBody;
     const { items, shippingAddress } = body;
-
-    // Shopify Storefront API endpoint
-    const shopifyDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
-    const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_PUBLIC_ACCESS_TOKEN;
-    
-    if (!shopifyDomain || !storefrontAccessToken) {
-      return NextResponse.json(
-        { error: 'Shopify configuration is missing' },
-        { status: 500 }
-      );
-    }
-
-    const endpoint = `https://${shopifyDomain}/api/2023-07/graphql.json`;
-
-    // Prepare line items for Shopify checkout
-    const lineItems = items.map((item: any) => ({
-      variantId: item.variantId,
-      quantity: item.quantity
-    }));
 
     // Create checkout mutation
     const mutation = `
@@ -42,33 +45,28 @@ export async function POST(request: NextRequest) {
     `;
 
     // Execute the GraphQL mutation
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': storefrontAccessToken
-      },
-      body: JSON.stringify({
-        query: mutation,
-        variables: {
-          input: {
-            lineItems,
-            shippingAddress: {
-              address1: shippingAddress.address,
-              city: shippingAddress.city,
-              country: shippingAddress.country,
-              firstName: shippingAddress.firstName,
-              lastName: shippingAddress.lastName,
-              phone: shippingAddress.phone,
-              province: '', // Add province/state if available
-              zip: shippingAddress.postalCode
-            }
-          }
+    const result = await shopifyFetch({
+      query: mutation,
+      variables: {
+        input: {
+          lineItems: items.map(item => ({
+            variantId: item.variantId,
+            quantity: item.quantity
+          })),
+          shippingAddress: {
+            address1: shippingAddress.address,
+            city: shippingAddress.city,
+            country: shippingAddress.country,
+            firstName: shippingAddress.firstName,
+            lastName: shippingAddress.lastName,
+            phone: shippingAddress.phone,
+            province: '', // Add province/state if available
+            zip: shippingAddress.postalCode
+          },
+          email: shippingAddress.email
         }
-      })
+      }
     });
-
-    const result = await response.json();
     
     if (result.data?.checkoutCreate?.checkout) {
       return NextResponse.json({
