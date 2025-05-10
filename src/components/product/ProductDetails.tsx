@@ -23,10 +23,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product, modelUrl }) =>
   
   // Format the price
   const price = parseFloat(selectedVariant?.price?.amount || product.priceRange.minVariantPrice.amount);
-  const currency = selectedVariant?.price?.currencyCode || product.priceRange.minVariantPrice.currencyCode;
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const formattedPrice = new Intl.NumberFormat('de-DE', {
     style: 'currency',
-    currency: currency,
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(price);
   
   // Get the first image or use a placeholder

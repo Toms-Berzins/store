@@ -49,6 +49,13 @@ export default function CartPage() {
                   const variant = item.variant;
                   const image = product.images.edges[0]?.node;
                   
+                  const formattedPrice = new Intl.NumberFormat('de-DE', {
+                    style: 'currency',
+                    currency: 'EUR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(parseFloat(variant.price.amount) * item.quantity)
+                  
                   return (
                     <li key={variant.id} className="py-6 flex">
                       {/* Product image */}
@@ -79,10 +86,7 @@ export default function CartPage() {
                               </Link>
                             </h3>
                             <p className="ml-4">
-                              {new Intl.NumberFormat('en-US', {
-                                style: 'currency',
-                                currency: variant.price.currencyCode,
-                              }).format(parseFloat(variant.price.amount) * item.quantity)}
+                              {formattedPrice}
                             </p>
                           </div>
                           <p className="mt-1 text-sm text-gray-500">
@@ -144,9 +148,11 @@ export default function CartPage() {
               <div className="flex justify-between text-base font-medium text-gray-900">
                 <p>Subtotal</p>
                 <p>
-                  {new Intl.NumberFormat('en-US', {
+                  {new Intl.NumberFormat('de-DE', {
                     style: 'currency',
                     currency: 'EUR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
                   }).format(subtotal)}
                 </p>
               </div>

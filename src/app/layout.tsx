@@ -20,7 +20,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <head>
+        <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+      </head>
+      <body className={inter.className} suppressHydrationWarning>
         <CartProvider>
           <div className="min-h-screen flex flex-col">
             <Navigation />

@@ -34,6 +34,8 @@ export interface Product {
       node: ProductVariant;
     }>;
   };
+  category?: string;
+  materials?: string[];
 }
 
 export interface ShopifyProduct {
